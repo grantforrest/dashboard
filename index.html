@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+<meta name="description" content="">
+<meta name="author" content="">
+<link rel="icon" href="../../favicon.ico">
+
+<title>Dashboard</title>
+          <script type="text/javascript" src="googlecharts.js"></script>
+  
+
+<script type="text/javascript">
+  
+//        var fileName = "optionsData.csv";
+          var data = "";
+ function UploadCSV() {
+        var csvFileUpload = document.getElementById("csvFileUpload");
+        var regex = /^([a-zA-Z0-9\s_\\.\-:])+(.csv|.txt)$/;
+        if (regex.test(csvFileUpload.value.toLowerCase())) {
+            if (typeof (FileReader) != "undefined") {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                data =e.target.result;   
+                  buildCharts();
+                };
+ 		var dvDetail = document.getElementById("dvDetail");
+                    dvDetail.innerText = csvFileUpload.files[0].lastModifiedDate ? "Data last updated: " + csvFileUpload.files
+
+[0].lastModifiedDate.toLocaleDateString() + " " + csvFileUpload.files[0].lastModifiedDate.toTimeString() : 'n/a';
+          
+                reader.readAsText(csvFileUpload.files[0]);
+            } else {
+                alert("This browser does not support the application, please update your browser to support HTML5.");
+            }
+        } else {
+            alert("Please upload a valid CSV file.");
+        }
+    }
+
+var defineProp = function ( obj, key, value ){
+  var config = {
+    value: value,
+    writable: true,
+    enumerable: true,
+    configurable: true
+  };
+  Object.defineProperty( obj, key, config );
+};
+
+
+
+
+      function buildCharts(){  
+	//data = document.getElementById("csvData").value;    
+      google.charts.load('current', {'packages':['gauge']});
+      google.charts.setOnLoadCallback(drawChart);
+}
+
+      function drawChart() {
+
+          var chartData = loadData();
+        //create divs in page for each chart
+           var element = document.getElementById("charts");
+          
+          
+          //create options array
+          var optionsArray = [];
+          var dataArray = [];
+          var chartArray = [];
+          for (var i = 0, len = chartData.length; i < len; i++) {
+           
+	  	//create chart locations
+               var div = document.createElement("div");
+               div.id = 'chart_div'+(i+1);
+		div.className="col-sm-3";
+               element.appendChild(div);
+        	
+              
+              var x = chartData[i];
+              optionsArray.push({ width: 400, height: 300,
+          redFrom: Number(x.redStart), redTo: Number(x.redEnd),
+          yellowFrom:Number(x.amberStart), yellowTo: Number(x.amberEnd),
+                                 greenFrom: Number(x.greenStart), greenTo: Number(x.greenEnd),
+          minorTicks: 5, max:Number(x.maxValue)
+                        }); //load the options for each chart
+              dataArray.push(google.visualization.arrayToDataTable([
+          ['Label', 'Value'],[x.kpiName, Number(x.actValue)]]));//load the data for each chart
+              
+              chartArray.push(new google.visualization.Gauge(document.getElementById('chart_div'+(i+1)))); //load the div for each chart
+              
+          };//end for loop
+          
+             
+
+            for (var i = 0, len = dataArray.length; i < len; i++) {
+     //draw the charts
+            chartArray[i].draw(dataArray[i], optionsArray[i]);
+     
+            }
+        
+      }    
+            
+
+            function loadData(){
+              //  var obj;
+                //load data string
+                 if( data == "" ){
+                     return 'DataNotReady' ;
+                 }else{
+                     
+                   return csvJSON(data);
+                        
+                     }
+            }
+            
+                        
+            function csvJSON(csv){
+
+              var lines=csv.split("\n");
+
+              var result = [];
+
+              var headers=lines[0].split(",");
+
+              for(var i=1;i<lines.length;i++){
+
+                  var obj = {};
+                  var currentline=lines[i].split(",");
+		if(currentline.length==headers.length){
+
+                  for(var j=0;j<headers.length;j++){
+                      defineProp(obj, headers[j], currentline[j]);
+                  }
+
+                  result.push(obj);
+		}
+              }
+              
+              return result; //JavaScript object
+            }
+            
+            
+         
+
+        </script>
+
+
+<!-- Bootstrap core CSS -->
+<link href="https://getbootstrap.com/docs/3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+<link href="https://getbootstrap.com/docs/3.3/assets/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
+
+<!-- Custom styles for this template -->
+<link href="https://getbootstrap.com/docs/3.3/examples/jumbotron/jumbotron.css" rel="stylesheet">
+
+
+<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+<!--[if lt IE 9]>
+<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+<![endif]-->
+
+       </head>
+  
+<body>
+
+<nav class="navbar navbar-inverse navbar-fixed-top">
+<div class="container">
+<div class="navbar-header">
+<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+<span class="sr-only">Toggle navigation</span>
+<span class="icon-bar"></span>
+<span class="icon-bar"></span>
+<span class="icon-bar"></span>
+</button>
+<a class="navbar-brand" href="#">Dashboard</a>
+</div>
+<div id="navbar" class="navbar-collapse collapse">
+</div><!--/.navbar-collapse -->
+</div>
+</nav>
+
+<!-- Main jumbotron for a primary marketing message or call to action -->
+<div class="jumbotron">
+
+<div class="container">
+<h1>KPI Dashboard <p id="dvDetail"></p></h1>
+</div>
+</div>
+<div class="container">
+<div class="row">
+<div class="hidden-print">
+<div class="col-sm-3">
+<input type="file" id="csvFileUpload" />
+</div>
+<div class="col-sm-3">
+<input type="button" id="upload" value="UploadCSV" onclick = "UploadCSV()" />
+</div>
+</div>
+</div>
+<hr>
+<div class="container">
+    <div class="row">
+	<div id="charts"></div>
+    </div>
+</div>
+<hr>
+
+<footer>
+<p>&copy; 2018 Grant Forrest</p>
+</footer>
+</div> <!-- /container -->
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
+<script src="https://getbootstrap.com/docs/3.3/dist/js/bootstrap.min.js"></script>
+<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+<script src="https://getbootstrap.com/docs/3.3/assets/js/ie10-viewport-bug-workaround.js"></script>
+
+ 
+</body>
+</html>
